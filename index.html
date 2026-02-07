@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>JusticeBytes – Cyber Crime Evidence Preservation</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{min-height:100vh;background:linear-gradient(120deg,#1e3c72,#4379b3)}
+button{cursor:pointer}
+
+/* LOGIN */
+#login{height:100vh;display:flex;justify-content:center;align-items:center}
+.login-box{background:rgba(255,255,255,0.15);padding:30px;border-radius:16px;width:340px;color:#fff;text-align:center}
+.login-box img{width:93px;margin-bottom:10px}
+input,textarea{width:100%;padding:9px;margin:12px 0;border-radius:8px;border:1px solid #000}
+.login-btn{background:#22c55e;color:#fff;border:none;padding:10px;width:100%;border-radius:30px}
+
+/* HOME */
+#home{display:none;height:100vh;justify-content:center;align-items:center;flex-direction:column;color:#fff}
+.logo{width:115px;margin-bottom:25px}
+.start-btn{padding:6px 33px;border:none;border-radius:40px;background:#22c55e;font-size:20px}
+
+/* DASHBOARD */
+#main{display:none;height:100vh}
+.sidebar{width:230px;background:linear-gradient(180deg,#1e3c72,#36b399);padding:20px;color:#fff}
+.nav-btn{background:#0f367b;padding:14px;border-radius:25px;margin-bottom:12px}
+.nav-btn.active{background:#fff;color:#0f367b}
+
+/* CONTENT */
+.content{flex:1;padding:40px;background:#f4f6ff}
+.card{background:#fff;padding:30px;border-radius:16px;width:750px;box-shadow:0 10px 30px rgba(0,0,0,0.15)}
+.section{display:none}
+.section.active{display:block}
+
+/* UPLOAD */
+.upload-options{display:flex;gap:10px;margin:15px 0}
+.option-btn{background:#1e3c72;color:#fff;padding:10px 14px;border:none;border-radius:10px}
+.option-btn.active{background:#22c55e}
+.submit-btn{background:#16a34a;color:#fff;padding:12px 25px;border:none;border-radius:10px}
+
+/* HASH */
+.hash-box{background:#eef2ff;padding:15px;border-radius:10px;font-family:monospace;word-break:break-all}
+
+/* REPORT */
+.report-title{text-align:center;font-size:22px;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;margin-bottom:20px}
+td,th{border:1px solid #ccc;padding:10px;font-size:14px}
+th{background:#f0f3fa}
+.verified{color:green;font-weight:bold}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-box">
+    <img src="JUSTICE BYTES.png">
+    <h2>JusticeBytes</h2>
+    <input id="contact" placeholder="Phone / Email">
+    <button class="login-btn" onclick="sendOtp()">Send OTP</button>
+    <input id="otp" placeholder="Enter OTP" style="display:none">
+    <button class="login-btn" id="verifyBtn" onclick="verifyOtp()" style="display:none">Verify</button>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home">
+  <img src="JUSTICE BYTES.png" class="logo">
+  <h1>JusticeBytes</h1>
+  <p>Cyber Crime Evidence Preservation</p>
+  <button class="start-btn" onclick="start()">Start Analysis ➜</button>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div class="sidebar">
+      <div class="nav-btn" onclick= "gohome()">🏠 Home</div>
+    <div class="nav-btn active" onclick="showSection('upload',this)">⬆ Upload</div>
+    <div class="nav-btn" onclick="showSection('hash',this)"># Hash</div>
+    <div class="nav-btn" onclick="showSection('history',this)">📜 History</div>
+    <div class="nav-btn" onclick="showSection('report',this)">📄 Report</div>
+    <div class="nav-btn" onclick="logout()">🚪 Logout</div>
+  </div>
+
+  <div class="content">
+
+    <!-- UPLOAD -->
+    <div id="upload" class="section active">
+      <div class="card">
+        <h2>Upload Evidence</h2>
+
+        <div class="upload-options">
+          <button class="option-btn active" onclick="selectType('file',this)">📁 File</button>
+          <button class="option-btn" onclick="selectType('email',this)">📧 Email</button>
+          <button class="option-btn" onclick="selectType('url',this)">🔗 URL</button>
+          <button class="option-btn" onclick="selectType('call',this)">📞 Call Logs</button>
+        </div>
+
+        <input type="file" id="fileInput">
+        <textarea id="emailInput" style="display:none" placeholder="Paste email content"></textarea>
+        <input type="text" id="urlInput" style="display:none" placeholder="Enter suspicious URL">
+        <textarea id="callInput" style="display:none"></textarea>
+
+        <button class="submit-btn" onclick="generateHash()">Submit Evidence</button>
+      </div>
+    </div>
+
+    <!-- HASH -->
+    <div id="hash" class="section">
+      <div class="card">
+        <h2>Generated Hash</h2>
+        <div id="hashOutput" class="hash-box">---</div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div id="history" class="section">
+      <div class="card">
+        <h2>Evidence History</h2>
+        <table>
+          <tr><th>Date</th><th>Hash</th></tr>
+          <tbody id="historyData"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- REPORT -->
+    <div id="report" class="section">
+      <div class="card">
+        <div class="report-title">EVIDENCE DETAILS</div>
+
+        <table>
+          <tr><th colspan="2">Case Information</th></tr>
+          <tr><td>Case ID</td><td>CCP-001</td></tr>
+          <tr><td>Date</td><td id="repDate"></td></tr>
+        </table>
+
+        <table>
+          <tr><th colspan="2">Integrity Verification</th></tr>
+          <tr><td>Algorithm</td><td>SHA-256</td></tr>
+          <tr><td>Hash</td><td id="finalHash"></td></tr>
+          <tr><td>Status</td><td class="verified">✔ Verified</td></tr>
+        </table>
+
+        <table>
+          <tr><th>Evidence Details</th></tr>
+          <tr><td id="callReport"></td></tr>
+        </table>
+
+        <button class="login-btn" onclick="downloadPDF()">⬇ Download PDF</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let otpGen;
+let finalHashValue="";
+let history=[];
+
+/* OTP */
+function sendOtp(){
+  otpGen=Math.floor(100000+Math.random()*900000);
+  alert("Demo OTP: "+otpGen);
+  otp.style.display="block";
+  verifyBtn.style.display="block";
+}
+function verifyOtp(){
+  if(otp.value==otpGen){
+    login.style.display="none";
+    home.style.display="flex";
+  } else alert("Invalid OTP");
+}
+function start(){
+  home.style.display="none";
+  main.style.display="flex";
+}
+function goHome(){
+  main.style.display = "none";
+  home.style.display = "flex";
+}
+function logout(){
+  main.style.display = "none";
+  home.style.display = "none";
+  login.style.display = "flex";
+
+  otp.value = "";
+  contact.value = "";
+}
+/* NAV */
+function showSection(id,btn){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+/* UPLOAD TYPE */
+function selectType(type,btn){
+  document.querySelectorAll(".option-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+
+  fileInput.style.display="none";
+  emailInput.style.display="none";
+  urlInput.style.display="none";
+  callInput.style.display="none";
+
+  if(type==="file") fileInput.style.display="block";
+  if(type==="email") emailInput.style.display="block";
+  if(type==="url") urlInput.style.display="block";
+  if(type==="call"){
+    callInput.style.display="block";
+    callInput.value=
+`Caller Number:
+Receiver Number:
+Date & Time:
+Duration:
+Call Type:`;
+  }
+}
+
+/* HASH */
+function generateHash(){
+  finalHashValue="SHA-256 : "+Math.random().toString(36).substring(2,42);
+  hashOutput.innerText=finalHashValue;
+  finalHash.innerText=finalHashValue;
+
+  callReport.innerText=
+    callInput.value ||
+    emailInput.value ||
+    urlInput.value ||
+    "File uploaded";
+
+  repDate.innerText=new Date().toLocaleString();
+
+  history.push({date:new Date().toLocaleString(),hash:finalHashValue});
+  historyData.innerHTML+=`<tr><td>${new Date().toLocaleString()}</td><td>${finalHashValue}</td></tr>`;
+
+  showSection("hash",document.querySelectorAll(".nav-btn")[1]);
+}
+
+/* PDF */
+function downloadPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF();
+  doc.text("DIGITAL EVIDENCE PRESERVATION REPORT",20,20);
+  doc.text("Case ID: CCP-001",20,35);
+  doc.text("Date: "+repDate.innerText,20,45);
+  doc.text("Hash:",20,60);
+  doc.text(finalHashValue,20,70);
+  doc.text("Evidence:",20,90);
+  doc.text(callReport.innerText,20,100);
+  doc.text("Status: VERIFIED ✔",20,140);
+  doc.save("JusticeBytes_Report.pdf");
+}
+</script>
+
+</body>
+</html>
